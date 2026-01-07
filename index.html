@@ -2,46 +2,94 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Zen Meditation Quiz</title>
+    <title>Zen Quiz</title>
     <style>
-        /* CSS GOES HERE */
+        /* --- THIS SECTION MAKES IT LOOK GOOD --- */
         body {
-            background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
-            font-family: sans-serif;
-            display: flex; justify-content: center; align-items: center;
-            height: 100vh; margin: 0;
+            background-color: #f0fdf4; /* Light Green */
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
+
         .quiz-container {
-            background: white; width: 90%; max-width: 400px;
-            padding: 30px; border-radius: 20px; text-align: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            background-color: white;
+            width: 350px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            border: 2px solid #bbf7d0;
         }
+
+        h2 {
+            color: #166534;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
         .btn {
-            display: block; width: 100%; padding: 12px; margin: 8px 0;
-            border: 2px solid #eee; border-radius: 10px; cursor: pointer;
-            background: white; transition: 0.3s;
+            background-color: #ffffff;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px;
+            width: 100%;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: block;
+            transition: 0.2s;
         }
-        .btn:hover { background: #f0fff0; border-color: #96e6a1; }
-        .correct { background: #96e6a1 !important; color: white; }
-        .wrong { background: #ffb3b3 !important; color: white; }
+
+        .btn:hover {
+            background-color: #f9fafb;
+            border-color: #22c55e;
+        }
+
+        /* Colors for right and wrong */
+        .correct {
+            background-color: #22c55e !important;
+            color: white !important;
+            border-color: #16a34a !important;
+        }
+
+        .wrong {
+            background-color: #ef4444 !important;
+            color: white !important;
+            border-color: #dc2626 !important;
+        }
+
         #next-btn {
-            background: #2d5a27; color: white; border: none;
-            padding: 15px; width: 100%; border-radius: 10px;
-            margin-top: 15px; cursor: pointer;
+            background-color: #166534;
+            color: white;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
         }
-        .hide { display: none; }
+
+        .hide {
+            display: none;
+        }
     </style>
 </head>
 <body>
 
     <div class="quiz-container">
-        <h2 id="question">Loading Meditation Quiz...</h2>
-        <div id="answer-buttons"></div>
+        <h2 id="question">Loading Journey...</h2>
+        <div id="answer-buttons">
+            </div>
         <button id="next-btn" class="hide">Next Question</button>
     </div>
 
     <script>
-        // JAVASCRIPT GOES HERE
+        /* --- THIS SECTION MAKES IT WORK --- */
         const questionElement = document.getElementById('question');
         const answerButtonsElement = document.getElementById('answer-buttons');
         const nextButton = document.getElementById('next-btn');
@@ -49,19 +97,19 @@
         let currentQuestionIndex = 0;
         let questions = [
             {
-                question: "What is the goal of mindfulness?",
+                question: "What is the main goal of meditation?",
                 answers: [
-                    { text: "Thinking about work", correct: false },
-                    { text: "Being present in the moment", correct: true },
-                    { text: "Clearing the mind completely", correct: false }
+                    { text: "Finding inner peace", correct: true },
+                    { text: "Winning a race", correct: false },
+                    { text: "Learning to fly", correct: false }
                 ]
             },
             {
-                question: "Which part of the body is often focused on during meditation?",
+                question: "Which of these helps with stress?",
                 answers: [
-                    { text: "The Breath", correct: true },
-                    { text: "The Toes", correct: false },
-                    { text: "The Elbows", correct: false }
+                    { text: "Deep breathing", correct: true },
+                    { text: "Drinking 10 coffees", correct: false },
+                    { text: "Screaming loudly", correct: false }
                 ]
             }
         ];
@@ -74,27 +122,34 @@
             resetState();
             let q = questions[currentQuestionIndex];
             questionElement.innerText = q.question;
+            
             q.answers.forEach(ans => {
-                const btn = document.createElement('button');
-                btn.innerText = ans.text;
-                btn.classList.add('btn');
-                if (ans.correct) btn.dataset.correct = "true";
-                btn.addEventListener('click', selectAnswer);
-                answerButtonsElement.appendChild(btn);
+                const button = document.createElement('button');
+                button.innerText = ans.text;
+                button.classList.add('btn');
+                if (ans.correct) button.dataset.correct = "true";
+                button.addEventListener('click', selectAnswer);
+                answerButtonsElement.appendChild(button);
             });
         }
 
         function resetState() {
             nextButton.classList.add('hide');
-            while (answerButtonsElement.firstChild) answerButtonsElement.removeChild(answerButtonsElement.firstChild);
+            while (answerButtonsElement.firstChild) {
+                answerButtonsElement.removeChild(answerButtonsElement.firstChild);
+            }
         }
 
         function selectAnswer(e) {
-            const selected = e.target;
-            const isCorrect = selected.dataset.correct === "true";
-            if (isCorrect) selected.classList.add('correct');
-            else selected.classList.add('wrong');
+            const selectedBtn = e.target;
+            const isCorrect = selectedBtn.dataset.correct === "true";
             
+            if (isCorrect) {
+                selectedBtn.classList.add('correct');
+            } else {
+                selectedBtn.classList.add('wrong');
+            }
+
             Array.from(answerButtonsElement.children).forEach(btn => {
                 if(btn.dataset.correct === "true") btn.classList.add('correct');
                 btn.disabled = true;
@@ -104,11 +159,12 @@
 
         nextButton.addEventListener('click', () => {
             currentQuestionIndex++;
-            if (currentQuestionIndex < questions.length) showQuestion();
-            else {
-                questionElement.innerText = "You finished the meditation journey!";
-                nextButton.innerText = "Restart";
-                currentQuestionIndex = -1;
+            if (currentQuestionIndex < questions.length) {
+                showQuestion();
+            } else {
+                questionElement.innerText = "Journey Complete!";
+                nextButton.innerText = "Play Again";
+                nextButton.onclick = () => location.reload();
             }
         });
 
