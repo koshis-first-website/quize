@@ -3,60 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blue Zen - Infinite Quiz</title>
+    <title>Blue Zen Quiz</title>
     <style>
-        /* 1. BLUE THEME & BUBBLES CSS */
+        /* CSS - Blue Theme & Animations */
         body {
-            background: linear-gradient(180deg, #1e3a8a 0%, #3b82f6 100%);
-            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(180deg, #0f172a 0%, #1e40af 100%);
+            font-family: 'Segoe UI', Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
-            overflow: hidden; /* Keeps bubbles inside screen */
+            overflow: hidden;
             position: relative;
         }
 
-        /* Bubble Style */
+        /* Floating Bubbles */
         .bubble {
             position: absolute;
-            bottom: -50px;
+            bottom: -100px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
-            animation: float 8s infinite ease-in;
-            z-index: 0;
+            animation: moveUp 10s linear infinite;
+            z-index: 1;
         }
 
-        @keyframes float {
-            0% { transform: translateY(0) translateX(0); opacity: 0; }
-            50% { opacity: 0.5; }
-            100% { transform: translateY(-110vh) translateX(50px); opacity: 0; }
+        @keyframes moveUp {
+            0% { transform: translateY(0); opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% { transform: translateY(-120vh); opacity: 0; }
         }
 
-        .quiz-container {
-            background: rgba(255, 255, 255, 0.95);
+        .quiz-card {
+            background: rgba(255, 255, 255, 0.98);
             width: 90%;
             max-width: 400px;
             padding: 30px;
-            border-radius: 25px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
             text-align: center;
             position: relative;
-            z-index: 10; /* Keeps quiz above bubbles */
+            z-index: 10;
         }
 
-        h2 { color: #1e3a8a; margin-bottom: 20px; font-size: 1.3rem; }
+        h2 { color: #1e3a8a; font-size: 1.4rem; margin-bottom: 20px; }
 
         .btn {
             background: white;
-            color: #333;
-            border: 2px solid #d1d5db;
-            padding: 12px;
+            border: 2px solid #e2e8f0;
+            padding: 14px;
             margin: 8px 0;
             border-radius: 12px;
-            cursor: pointer;
             width: 100%;
+            cursor: pointer;
             font-size: 1rem;
             transition: 0.3s;
         }
@@ -64,18 +64,18 @@
         .btn:hover { border-color: #3b82f6; background: #eff6ff; }
 
         .correct { background: #22c55e !important; color: white; border-color: #16a34a; }
-        .wrong { background: #ef4444 !important; color: white; border-color: #dc2626; }
+        .wrong { background: #ef4444 !important; color: white; border-color: #b91c1c; }
 
         #next-btn {
-            background: #1e3a8a;
+            background: #2563eb;
             color: white;
             border: none;
             padding: 15px;
+            width: 100%;
             border-radius: 12px;
+            font-weight: bold;
             cursor: pointer;
             margin-top: 20px;
-            width: 100%;
-            font-weight: bold;
         }
 
         .hide { display: none; }
@@ -83,106 +83,118 @@
 </head>
 <body>
 
-    <div class="quiz-container">
-        <h2 id="question">Connecting to Zen Web...</h2>
+    <div class="quiz-card">
+        <h2 id="question">Starting Meditation...</h2>
         <div id="answer-buttons"></div>
-        <button id="next-btn" class="hide">Continue Journey</button>
+        <button id="next-btn" class="hide">Next Step</button>
     </div>
 
     <script>
-        // 2. BUBBLE GENERATOR
-        function createBubbles() {
-            for (let i = 0; i < 15; i++) {
-                const bubble = document.createElement('div');
-                bubble.className = 'bubble';
-                const size = Math.random() * 60 + 10 + "px";
-                bubble.style.width = size;
-                bubble.style.height = size;
-                bubble.style.left = Math.random() * 100 + "vw";
-                bubble.style.animationDelay = Math.random() * 8 + "s";
-                bubble.style.animationDuration = Math.random() * 5 + 7 + "s";
-                document.body.appendChild(bubble);
-            }
+        // 1. Create Bubbles
+        for (let i = 0; i < 20; i++) {
+            let b = document.createElement('div');
+            b.className = 'bubble';
+            let size = Math.random() * 50 + 10 + 'px';
+            b.style.width = size;
+            b.style.height = size;
+            b.style.left = Math.random() * 100 + 'vw';
+            b.style.animationDelay = Math.random() * 10 + 's';
+            b.style.animationDuration = Math.random() * 5 + 5 + 's';
+            document.body.appendChild(b);
         }
-        createBubbles();
 
-        // 3. WEB API & QUIZ LOGIC
-        const questionElement = document.getElementById('question');
-        const answerButtonsElement = document.getElementById('answer-buttons');
-        const nextButton = document.getElementById('next-btn');
+        // 2. Questions (Local Backup + Web)
+        let questions = [
+            {
+                question: "Which of these is best for mindfulness?",
+                answers: [
+                    { text: "Deep Breathing", correct: true },
+                    { text: "Playing Loud Music", correct: false },
+                    { text: "Running Fast", correct: false }
+                ]
+            },
+            {
+                question: "What should you focus on during meditation?",
+                answers: [
+                    { text: "The Present Moment", correct: true },
+                    { text: "Yesterday's Lunch", correct: false },
+                    { text: "Future Problems", correct: false }
+                ]
+            }
+        ];
 
-        let questions = [];
         let currentQuestionIndex = 0;
+        const qEl = document.getElementById('question');
+        const btnBox = document.getElementById('answer-buttons');
+        const nextBtn = document.getElementById('next-btn');
 
-        async function fetchFromWeb() {
+        // 3. Fetch Web Questions (background refill)
+        async function fetchMore() {
             try {
-                // Fetching Nature/Science/Health (Category 17)
-                const response = await fetch('https://opentdb.com/api.php?amount=20&category=17&type=multiple');
-                const data = await response.json();
-                
-                questions = data.results.map(q => ({
+                const res = await fetch('https://opentdb.com/api.php?amount=10&category=17&type=multiple');
+                const data = await res.json();
+                const webQ = data.results.map(q => ({
                     question: decodeHTML(q.question),
                     answers: shuffle([
                         { text: decodeHTML(q.correct_answer), correct: true },
                         ...q.incorrect_answers.map(a => ({ text: decodeHTML(a), correct: false }))
                     ])
                 }));
-                showQuestion();
-            } catch (e) {
-                questionElement.innerText = "Offline. Please check internet!";
-            }
+                questions = [...questions, ...webQ]; 
+            } catch (e) { console.log("Web connection slow, using local questions."); }
         }
 
         function showQuestion() {
-            resetState();
+            reset();
             let q = questions[currentQuestionIndex];
-            questionElement.innerText = q.question;
+            qEl.innerText = q.question;
             q.answers.forEach(ans => {
                 const btn = document.createElement('button');
                 btn.innerText = ans.text;
                 btn.classList.add('btn');
                 if (ans.correct) btn.dataset.correct = "true";
-                btn.addEventListener('click', selectAnswer);
-                answerButtonsElement.appendChild(btn);
+                btn.onclick = select;
+                btnBox.appendChild(btn);
             });
         }
 
-        function resetState() {
-            nextButton.classList.add('hide');
-            while (answerButtonsElement.firstChild) answerButtonsElement.removeChild(answerButtonsElement.firstChild);
+        function reset() {
+            nextBtn.classList.add('hide');
+            while (btnBox.firstChild) btnBox.removeChild(btnBox.firstChild);
         }
 
-        function selectAnswer(e) {
-            const selected = e.target;
-            const isCorrect = selected.dataset.correct === "true";
-            if (isCorrect) selected.classList.add('correct');
-            else selected.classList.add('wrong');
-            
-            Array.from(answerButtonsElement.children).forEach(btn => {
-                if(btn.dataset.correct === "true") btn.classList.add('correct');
-                btn.disabled = true;
+        function select(e) {
+            const btn = e.target;
+            const isCorrect = btn.dataset.correct === "true";
+            btn.classList.add(isCorrect ? 'correct' : 'wrong');
+            Array.from(btnBox.children).forEach(b => {
+                if(b.dataset.correct === "true") b.classList.add('correct');
+                b.disabled = true;
             });
-            nextButton.classList.remove('hide');
+            nextBtn.classList.remove('hide');
         }
 
-        nextButton.addEventListener('click', () => {
+        nextBtn.onclick = () => {
             currentQuestionIndex++;
             if (currentQuestionIndex < questions.length) showQuestion();
             else {
-                questionElement.innerText = "Zen Master Status Achieved!";
-                nextButton.innerText = "Restart";
-                nextButton.onclick = () => location.reload();
+                qEl.innerText = "You have reached Inner Peace!";
+                nextBtn.innerText = "Restart";
+                nextBtn.onclick = () => location.reload();
             }
-        });
+        };
 
-        function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
-        function decodeHTML(html) {
-            const txt = document.createElement("textarea");
-            txt.innerHTML = html;
-            return txt.value;
+        function shuffle(a) { return a.sort(() => Math.random() - 0.5); }
+        function decodeHTML(h) {
+            const t = document.createElement("textarea");
+            t.innerHTML = h;
+            return t.value;
         }
 
-        fetchFromWeb();
+        // Start immediately
+        showQuestion();
+        // Try to get more from web
+        fetchMore();
     </script>
 </body>
 </html>
