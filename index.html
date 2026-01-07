@@ -2,154 +2,162 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Zen Quiz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blue Zen - Infinite Quiz</title>
     <style>
-        /* --- THIS SECTION MAKES IT LOOK GOOD --- */
+        /* 1. BLUE THEME & BUBBLES CSS */
         body {
-            background-color: #f0fdf4; /* Light Green */
-            font-family: Arial, sans-serif;
+            background: linear-gradient(180deg, #1e3a8a 0%, #3b82f6 100%);
+            font-family: 'Segoe UI', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             margin: 0;
+            overflow: hidden; /* Keeps bubbles inside screen */
+            position: relative;
+        }
+
+        /* Bubble Style */
+        .bubble {
+            position: absolute;
+            bottom: -50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            animation: float 8s infinite ease-in;
+            z-index: 0;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(-110vh) translateX(50px); opacity: 0; }
         }
 
         .quiz-container {
-            background-color: white;
-            width: 350px;
+            background: rgba(255, 255, 255, 0.95);
+            width: 90%;
+            max-width: 400px;
             padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
             text-align: center;
-            border: 2px solid #bbf7d0;
+            position: relative;
+            z-index: 10; /* Keeps quiz above bubbles */
         }
 
-        h2 {
-            color: #166534;
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-        }
+        h2 { color: #1e3a8a; margin-bottom: 20px; font-size: 1.3rem; }
 
         .btn {
-            background-color: #ffffff;
-            border: 2px solid #e5e7eb;
-            border-radius: 10px;
+            background: white;
+            color: #333;
+            border: 2px solid #d1d5db;
             padding: 12px;
-            width: 100%;
-            margin-bottom: 10px;
+            margin: 8px 0;
+            border-radius: 12px;
             cursor: pointer;
+            width: 100%;
             font-size: 1rem;
-            display: block;
-            transition: 0.2s;
+            transition: 0.3s;
         }
 
-        .btn:hover {
-            background-color: #f9fafb;
-            border-color: #22c55e;
-        }
+        .btn:hover { border-color: #3b82f6; background: #eff6ff; }
 
-        /* Colors for right and wrong */
-        .correct {
-            background-color: #22c55e !important;
-            color: white !important;
-            border-color: #16a34a !important;
-        }
-
-        .wrong {
-            background-color: #ef4444 !important;
-            color: white !important;
-            border-color: #dc2626 !important;
-        }
+        .correct { background: #22c55e !important; color: white; border-color: #16a34a; }
+        .wrong { background: #ef4444 !important; color: white; border-color: #dc2626; }
 
         #next-btn {
-            background-color: #166534;
+            background: #1e3a8a;
             color: white;
             border: none;
             padding: 15px;
-            width: 100%;
-            border-radius: 10px;
-            font-weight: bold;
+            border-radius: 12px;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 20px;
+            width: 100%;
+            font-weight: bold;
         }
 
-        .hide {
-            display: none;
-        }
+        .hide { display: none; }
     </style>
 </head>
 <body>
 
     <div class="quiz-container">
-        <h2 id="question">Loading Journey...</h2>
-        <div id="answer-buttons">
-            </div>
-        <button id="next-btn" class="hide">Next Question</button>
+        <h2 id="question">Connecting to Zen Web...</h2>
+        <div id="answer-buttons"></div>
+        <button id="next-btn" class="hide">Continue Journey</button>
     </div>
 
     <script>
-        /* --- THIS SECTION MAKES IT WORK --- */
+        // 2. BUBBLE GENERATOR
+        function createBubbles() {
+            for (let i = 0; i < 15; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                const size = Math.random() * 60 + 10 + "px";
+                bubble.style.width = size;
+                bubble.style.height = size;
+                bubble.style.left = Math.random() * 100 + "vw";
+                bubble.style.animationDelay = Math.random() * 8 + "s";
+                bubble.style.animationDuration = Math.random() * 5 + 7 + "s";
+                document.body.appendChild(bubble);
+            }
+        }
+        createBubbles();
+
+        // 3. WEB API & QUIZ LOGIC
         const questionElement = document.getElementById('question');
         const answerButtonsElement = document.getElementById('answer-buttons');
         const nextButton = document.getElementById('next-btn');
 
+        let questions = [];
         let currentQuestionIndex = 0;
-        let questions = [
-            {
-                question: "What is the main goal of meditation?",
-                answers: [
-                    { text: "Finding inner peace", correct: true },
-                    { text: "Winning a race", correct: false },
-                    { text: "Learning to fly", correct: false }
-                ]
-            },
-            {
-                question: "Which of these helps with stress?",
-                answers: [
-                    { text: "Deep breathing", correct: true },
-                    { text: "Drinking 10 coffees", correct: false },
-                    { text: "Screaming loudly", correct: false }
-                ]
-            }
-        ];
 
-        function startQuiz() {
-            showQuestion();
+        async function fetchFromWeb() {
+            try {
+                // Fetching Nature/Science/Health (Category 17)
+                const response = await fetch('https://opentdb.com/api.php?amount=20&category=17&type=multiple');
+                const data = await response.json();
+                
+                questions = data.results.map(q => ({
+                    question: decodeHTML(q.question),
+                    answers: shuffle([
+                        { text: decodeHTML(q.correct_answer), correct: true },
+                        ...q.incorrect_answers.map(a => ({ text: decodeHTML(a), correct: false }))
+                    ])
+                }));
+                showQuestion();
+            } catch (e) {
+                questionElement.innerText = "Offline. Please check internet!";
+            }
         }
 
         function showQuestion() {
             resetState();
             let q = questions[currentQuestionIndex];
             questionElement.innerText = q.question;
-            
             q.answers.forEach(ans => {
-                const button = document.createElement('button');
-                button.innerText = ans.text;
-                button.classList.add('btn');
-                if (ans.correct) button.dataset.correct = "true";
-                button.addEventListener('click', selectAnswer);
-                answerButtonsElement.appendChild(button);
+                const btn = document.createElement('button');
+                btn.innerText = ans.text;
+                btn.classList.add('btn');
+                if (ans.correct) btn.dataset.correct = "true";
+                btn.addEventListener('click', selectAnswer);
+                answerButtonsElement.appendChild(btn);
             });
         }
 
         function resetState() {
             nextButton.classList.add('hide');
-            while (answerButtonsElement.firstChild) {
-                answerButtonsElement.removeChild(answerButtonsElement.firstChild);
-            }
+            while (answerButtonsElement.firstChild) answerButtonsElement.removeChild(answerButtonsElement.firstChild);
         }
 
         function selectAnswer(e) {
-            const selectedBtn = e.target;
-            const isCorrect = selectedBtn.dataset.correct === "true";
+            const selected = e.target;
+            const isCorrect = selected.dataset.correct === "true";
+            if (isCorrect) selected.classList.add('correct');
+            else selected.classList.add('wrong');
             
-            if (isCorrect) {
-                selectedBtn.classList.add('correct');
-            } else {
-                selectedBtn.classList.add('wrong');
-            }
-
             Array.from(answerButtonsElement.children).forEach(btn => {
                 if(btn.dataset.correct === "true") btn.classList.add('correct');
                 btn.disabled = true;
@@ -159,16 +167,22 @@
 
         nextButton.addEventListener('click', () => {
             currentQuestionIndex++;
-            if (currentQuestionIndex < questions.length) {
-                showQuestion();
-            } else {
-                questionElement.innerText = "Journey Complete!";
-                nextButton.innerText = "Play Again";
+            if (currentQuestionIndex < questions.length) showQuestion();
+            else {
+                questionElement.innerText = "Zen Master Status Achieved!";
+                nextButton.innerText = "Restart";
                 nextButton.onclick = () => location.reload();
             }
         });
 
-        startQuiz();
+        function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+        function decodeHTML(html) {
+            const txt = document.createElement("textarea");
+            txt.innerHTML = html;
+            return txt.value;
+        }
+
+        fetchFromWeb();
     </script>
 </body>
 </html>
