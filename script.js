@@ -1,108 +1,63 @@
-const questionElement = document.getElementById('question');
-const answerButtonsElement = document.getElementById('answer-buttons');
-const nextButton = document.getElementById('next-btn');
-const scoreElement = document.getElementById('score-count');
-const countElement = document.getElementById('question-count');
-
-let questions = [];
-let currentQuestionIndex = 0;
-let score = 0;
-let totalAnswered = 0;
-
-// Connect to the Web API and get 50 questions
-async function fetchQuestions() {
-    try {
-        const response = await fetch('https://opentdb.com/api.php?amount=50&type=multiple');
-        const data = await response.json();
-        
-        const newQuestions = data.results.map(q => {
-            return {
-                question: decodeHTML(q.question),
-                answers: shuffle([
-                    { text: decodeHTML(q.correct_answer), correct: true },
-                    ...q.incorrect_answers.map(a => ({ text: decodeHTML(a), correct: false }))
-                ])
-            };
-        });
-
-        questions = [...questions, ...newQuestions];
-        
-        // If it's the first time loading, start the quiz
-        if (totalAnswered === 0) showQuestion();
-        
-    } catch (error) {
-        questionElement.innerText = "Error loading from web. Check connection.";
-    }
+body {
+    background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); /* Calming Green */
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
 }
 
-function showQuestion() {
-    resetState();
-    let currentQuestion = questions[currentQuestionIndex];
-    
-    questionElement.innerText = currentQuestion.question;
-    countElement.innerText = `Question: ${totalAnswered + 1}`;
-
-    currentQuestion.answers.forEach(answer => {
-        const button = document.createElement('button');
-        button.innerText = answer.text;
-        button.classList.add('btn');
-        if (answer.correct) button.dataset.correct = "true";
-        button.addEventListener('click', selectAnswer);
-        answerButtonsElement.appendChild(button);
-    });
+.quiz-container {
+    background: rgba(255, 255, 255, 0.9);
+    width: 90%;
+    max-width: 450px;
+    padding: 30px;
+    border-radius: 25px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    text-align: center;
 }
 
-function resetState() {
-    nextButton.classList.add('hide');
-    while (answerButtonsElement.firstChild) {
-        answerButtonsElement.removeChild(answerButtonsElement.firstChild);
-    }
+.zen-header {
+    display: flex;
+    justify-content: space-between;
+    color: #555;
+    font-size: 0.8rem;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-function selectAnswer(e) {
-    const selectedBtn = e.target;
-    const isCorrect = selectedBtn.dataset.correct === "true";
-    
-    if (isCorrect) {
-        selectedBtn.classList.add("correct");
-        score++;
-        scoreElement.innerText = `Score: ${score}`;
-    } else {
-        selectedBtn.classList.add("wrong");
-    }
+h2 { color: #2d5a27; font-weight: 400; line-height: 1.5; }
 
-    // Reveal correct answer and disable buttons
-    Array.from(answerButtonsElement.children).forEach(button => {
-        if (button.dataset.correct === "true") button.classList.add("correct");
-        button.disabled = true;
-    });
-
-    nextButton.classList.remove('hide');
+.btn {
+    background: white;
+    color: #444;
+    border: 2px solid #e0e0e0;
+    padding: 15px;
+    margin: 5px 0;
+    border-radius: 12px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+    transition: all 0.3s ease;
 }
 
-nextButton.addEventListener('click', () => {
-    currentQuestionIndex++;
-    totalAnswered++;
+.btn:hover { border-color: #96e6a1; background: #f9fff9; }
 
-    // "Refill" the tank: if only 5 questions left, fetch 50 more in background
-    if (questions.length - currentQuestionIndex === 5) {
-        fetchQuestions();
-    }
+.correct { background: #96e6a1 !important; color: white; border-color: #74c77f; }
+.wrong { background: #ffb3b3 !important; color: white; border-color: #ff8080; }
 
-    showQuestion();
-});
-
-// Helper: Shuffle answers
-function shuffle(array) {
-    return array.sort(() => Math.random() - 0.5);
+#next-btn {
+    background: #2d5a27;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%;
+    font-size: 1rem;
 }
 
-// Helper: Fix weird web characters (like &quot;)
-function decodeHTML(html) {
-    const txt = document.createElement("textarea");
-    txt.innerHTML = html;
-    return txt.value;
-}
-
-// Kick off the first fetch
-fetchQuestions();
+.hide { display: none; }
